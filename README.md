@@ -22,7 +22,7 @@ import (
 )
 
 func main()  {
-	// Limit 3 goroutines to run concurrently.
+    // Limit 3 goroutines to run concurrently.
     c := goccm.New(3)
     
     for i := 1; i <= 10; i++ {
