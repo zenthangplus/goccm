@@ -1,5 +1,7 @@
 package goccm
 
+import "sync/atomic"
+
 type (
 	ConcurrencyManager interface {
 		// Wait until a slot is available for the new goroutine.
@@ -15,7 +17,7 @@ type (
 		WaitAllDone()
 
 		// Returns the number of goroutines which are running
-		RunningCount() int
+		RunningCount() int32
 	}
 
 	concurrencyManager struct {
@@ -35,7 +37,7 @@ type (
 		closed bool
 
 		// The running count allows we know the number of goroutines are running
-		runningCount int
+		runningCount int32
 	}
 )
 
@@ -91,13 +93,13 @@ func (c *concurrencyManager) Wait() {
 	<-c.managerCh
 
 	// Increase the running count to help we know how many goroutines are running.
-	c.runningCount++
+	atomic.AddInt32(&c.runningCount, 1)
 }
 
 // Mark a goroutine as finished
 func (c *concurrencyManager) Done() {
 	// Decrease the number of running count
-	c.runningCount--
+	atomic.AddInt32(&c.runningCount, -1)
 	c.doneCh <- true
 }
 
@@ -108,11 +110,14 @@ func (c *concurrencyManager) Close() {
 
 // Wait for all goroutines are done
 func (c *concurrencyManager) WaitAllDone() {
+	// Close the manager automatic
+	c.Close()
+
 	// This will block until allDoneCh was marked
 	<-c.allDoneCh
 }
 
 // Returns the number of goroutines which are running
-func (c *concurrencyManager) RunningCount() int {
+func (c *concurrencyManager) RunningCount() int32 {
 	return c.runningCount
 }
