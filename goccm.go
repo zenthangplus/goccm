@@ -2,10 +2,20 @@ package goccm
 
 type (
 	ConcurrencyManager interface {
+		// Wait until a slot is available for the new goroutine.
 		Wait()
+
+		// Mark a goroutine as finished
 		Done()
+
+		// Close the manager manually
 		Close()
+
+		// Wait for all goroutines are done
 		WaitAllDone()
+
+		// Returns the number of goroutines which are running
+		RunningCount() int
 	}
 
 	concurrencyManager struct {
@@ -100,4 +110,9 @@ func (c *concurrencyManager) Close() {
 func (c *concurrencyManager) WaitAllDone() {
 	// This will block until allDoneCh was marked
 	<-c.allDoneCh
+}
+
+// Returns the number of goroutines which are running
+func (c *concurrencyManager) RunningCount() int {
+	return c.runningCount
 }
