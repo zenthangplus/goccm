@@ -41,9 +41,9 @@ type (
 	}
 )
 
-// Initiate the manager.
+// Initiate the manager
 func New(maxGoRoutines int) *concurrencyManager {
-	// Initiate manager object
+	// Initiate the manager object
 	c := concurrencyManager{
 		max:       maxGoRoutines,
 		managerCh: make(chan interface{}, maxGoRoutines),
