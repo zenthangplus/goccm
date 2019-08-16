@@ -1,6 +1,6 @@
-# Golang concurrency manager
+# Golang Concurrency Manager
 
-Golang Concurrency Manager package manages the number of goroutines that are allowed to run concurrently.
+Golang Concurrency Manager package limits the number of goroutines that are allowed to run concurrently.
 
 ### Installation
 
