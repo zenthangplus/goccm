@@ -40,7 +40,7 @@ func main()  {
         }(i)
     }
     
-    // This function have to call to ensure all goroutines has finished 
+    // This function have to call to ensure all goroutines have finished 
     // after close the main program.
     c.WaitAllDone()
 }
