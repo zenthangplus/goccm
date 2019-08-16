@@ -35,6 +35,7 @@ func main()  {
             time.Sleep(2 * time.Second)
             
             // This function have to when a goroutine has finished
+            // Or you can use `defer c.Done()` at the top of goroutine.
             c.Done()
         }(i)
     }
