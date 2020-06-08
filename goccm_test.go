@@ -40,7 +40,7 @@ func TestManuallyClose(t *testing.T) {
 
 func TestConcurrency(t *testing.T) {
 	var maxRunningJobs = 3
-	var testMaxRunningJobs int32 = 0
+	var testMaxRunningJobs int32
 	c := New(maxRunningJobs)
 	for i := 1; i <= 10; i++ {
 		c.Wait()

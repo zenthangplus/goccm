@@ -3,6 +3,7 @@ package goccm
 import "sync/atomic"
 
 type (
+	// ConcurrencyManager Interface
 	ConcurrencyManager interface {
 		// Wait until a slot is available for the new goroutine.
 		Wait()
@@ -41,7 +42,7 @@ type (
 	}
 )
 
-// Initiate the manager
+// New concurrencyManager
 func New(maxGoRoutines int) *concurrencyManager {
 	// Initiate the manager object
 	c := concurrencyManager{
