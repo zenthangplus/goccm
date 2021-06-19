@@ -1,7 +1,5 @@
 package goccm
 
-import "sync/atomic"
-
 type (
 	// ConcurrencyManager Interface
 	ConcurrencyManager interface {
@@ -18,7 +16,7 @@ type (
 		WaitAllDone()
 
 		// Returns the number of goroutines which are running
-		RunningCount() int32
+		RunningCount() int
 	}
 
 	concurrencyManager struct {
@@ -26,82 +24,54 @@ type (
 		max int
 
 		// The manager channel to coordinate the number of concurrent goroutines.
-		managerCh chan interface{}
-
-		// The done channel indicates when a single goroutine has finished its job.
-		doneCh chan bool
+		managerCh chan struct{}
 
 		// This channel indicates when all goroutines have finished their job.
-		allDoneCh chan bool
+		allDoneCh chan struct{}
 
 		// The close flag allows we know when we can close the manager
 		closed bool
-
-		// The running count allows we know the number of goroutines are running
-		runningCount int32
 	}
 )
 
 // New concurrencyManager
 func New(maxGoRoutines int) *concurrencyManager {
-	// Initiate the manager object
-	c := concurrencyManager{
-		max:       maxGoRoutines,
-		managerCh: make(chan interface{}, maxGoRoutines),
-		doneCh:    make(chan bool),
-		allDoneCh: make(chan bool),
+	// Create manager channel with maxGoRoutines size
+	managerCh := make(chan struct{}, maxGoRoutines)
+
+	// Fill the manager channel 
+	for i := 0; i < maxGoRoutines; i++ {
+		managerCh <- struct{}{}
 	}
 
-	// Fill the manager channel by placeholder values
-	for i := 0; i < c.max; i++ {
-		c.managerCh <- nil
+	// Initiate the manager
+	return &concurrencyManager{
+		max: maxGoRoutines,
+		managerCh: managerCh,
+		allDoneCh: make(chan struct{}, 1),
 	}
-
-	// Start the controller to collect all the jobs
-	go c.controller()
-
-	return &c
-}
-
-// Create the controller to collect all the jobs.
-// When a goroutine is finished, we can release a slot for another goroutine.
-func (c *concurrencyManager) controller() {
-	for {
-		// This will block until a goroutine is finished
-		<-c.doneCh
-
-		// Say that another goroutine can now start
-		c.managerCh <- nil
-
-		// When the closed flag is set,
-		// we need to close the manager if it doesn't have any running goroutine
-		if c.closed == true && c.runningCount == 0 {
-			break
-		}
-	}
-
-	// Say that all goroutines are finished, we can close the manager
-	c.allDoneCh <- true
 }
 
 // Wait until a slot is available for the new goroutine.
 // A goroutine have to start after this function.
 func (c *concurrencyManager) Wait() {
-
 	// Try to receive from the manager channel. When we have something,
 	// it means a slot is available and we can start a new goroutine.
 	// Otherwise, it will block until a slot is available.
 	<-c.managerCh
-
-	// Increase the running count to help we know how many goroutines are running.
-	atomic.AddInt32(&c.runningCount, 1)
 }
 
 // Mark a goroutine as finished
 func (c *concurrencyManager) Done() {
-	// Decrease the number of running count
-	atomic.AddInt32(&c.runningCount, -1)
-	c.doneCh <- true
+	// Say that another goroutine can now start
+	c.managerCh <- struct{}{}
+
+	// When the closed flag is set,
+	// we need to close the manager if it doesn't have any running goroutine
+	if c.closed && len(c.managerCh) == c.max {
+		// Say that all goroutines are finished, we can close the manager
+		c.allDoneCh <- struct{}{}
+	}
 }
 
 // Close the manager manually
@@ -119,6 +89,6 @@ func (c *concurrencyManager) WaitAllDone() {
 }
 
 // Returns the number of goroutines which are running
-func (c *concurrencyManager) RunningCount() int32 {
-	return c.runningCount
+func (c *concurrencyManager) RunningCount() int {
+	return  c.max - len(c.managerCh)
 }
