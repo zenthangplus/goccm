@@ -1,6 +1,7 @@
 package goccm
 
 import (
+	"strconv"
 	"fmt"
 	"testing"
 	"time"
@@ -40,7 +41,7 @@ func TestManuallyClose(t *testing.T) {
 
 func TestConcurrency(t *testing.T) {
 	var maxRunningJobs = 3
-	var testMaxRunningJobs int32
+	var testMaxRunningJobs int
 	c := New(maxRunningJobs)
 	for i := 1; i <= 10; i++ {
 		c.Wait()
@@ -54,7 +55,21 @@ func TestConcurrency(t *testing.T) {
 		}(i)
 	}
 	c.WaitAllDone()
-	if testMaxRunningJobs > int32(maxRunningJobs) {
+	if testMaxRunningJobs > maxRunningJobs {
 		t.Errorf("The number of concurrency jobs has exceeded %d. Real result %d.", maxRunningJobs, testMaxRunningJobs)
+	}
+}
+
+func BenchmarkConcurrency(b *testing.B) {
+	for i := 3; i <= 30; i++ {
+		b.Run(strconv.Itoa(i), func(b *testing.B) {
+			c := New(i)
+			b.ResetTimer()
+			for j := 0; j < b.N; j++ {
+				c.Wait()
+				go c.Done()
+			}
+			c.WaitAllDone()
+		})
 	}
 }
