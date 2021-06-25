@@ -20,25 +20,6 @@ func TestExample(t *testing.T) {
 	c.WaitAllDone()
 }
 
-func TestManuallyClose(t *testing.T) {
-	executedJobs := 0
-	c := New(3)
-	for i := 1; i <= 1000; i++ {
-		c.Wait()
-		go func() {
-			executedJobs++
-			fmt.Printf("Executed jobs %d\n", executedJobs)
-			time.Sleep(2 * time.Second)
-			c.Done()
-		}()
-		if i == 5 {
-			c.Close()
-			break
-		}
-	}
-	c.WaitAllDone()
-}
-
 func TestConcurrency(t *testing.T) {
 	var maxRunningJobs = 3
 	var testMaxRunningJobs int
@@ -56,7 +37,7 @@ func TestConcurrency(t *testing.T) {
 	}
 	c.WaitAllDone()
 	if testMaxRunningJobs > maxRunningJobs {
-		t.Errorf("The number of concurrency jobs has exceeded %d. Real result %d.", maxRunningJobs, testMaxRunningJobs)
+		t.Errorf("The number of concurrent jobs has exceeded %d. Real result %d.", maxRunningJobs, testMaxRunningJobs)
 	}
 }
 
