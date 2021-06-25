@@ -54,3 +54,17 @@ func BenchmarkConcurrency(b *testing.B) {
 		})
 	}
 }
+
+func BenchmarkLargeConcurrency(b *testing.B) {
+	for i := 1000; i <= 1010; i++ {
+		b.Run(strconv.Itoa(i), func(b *testing.B) {
+			c := New(i)
+			b.ResetTimer()
+			for j := 0; j < b.N; j++ {
+				c.Wait()
+				go c.Done()
+			}
+			c.WaitAllDone()
+		})
+	}
+}
