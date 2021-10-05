@@ -17,7 +17,7 @@ package main
 
 import (
     "fmt"
-    "goccm"
+    "github.com/zenthangplus/goccm"
     "time"
 )
 
@@ -27,20 +27,20 @@ func main()  {
     
     for i := 1; i <= 10; i++ {
     	
-        // This function have to call before any goroutine
+        // This function has to call before any goroutine
         c.Wait()
         
         go func(i int) {
             fmt.Printf("Job %d is running\n", i)
             time.Sleep(2 * time.Second)
             
-            // This function have to when a goroutine has finished
+            // This function has to when a goroutine has finished
             // Or you can use `defer c.Done()` at the top of goroutine.
             c.Done()
         }(i)
     }
     
-    // This function have to call to ensure all goroutines have finished 
+    // This function has to call to ensure all goroutines have finished 
     // after close the main program.
     c.WaitAllDone()
 }
@@ -51,7 +51,7 @@ func main()  {
 ```go
 package main
 
-import "goccm"
+import "github.com/zenthangplus/goccm"
 
 func main() {
     // Create the concurrency manager
