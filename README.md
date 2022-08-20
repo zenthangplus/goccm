@@ -1,6 +1,6 @@
 # Golang Concurrency Manager
 
-[![Build Status](https://travis-ci.com/zenthangplus/goccm.svg?branch=master)](https://travis-ci.com/zenthangplus/goccm)
+[![run tests](https://github.com/zenthangplus/goccm/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/zenthangplus/goccm/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/zenthangplus/goccm/branch/master/graph/badge.svg)](https://codecov.io/gh/zenthangplus/goccm)
 [![goreportcard](https://goreportcard.com/badge/github.com/zenthangplus/goccm)](https://goreportcard.com/report/github.com/zenthangplus/goccm)
 
