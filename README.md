@@ -1,4 +1,8 @@
-# Golang Concurrency Manager [![Build Status](https://travis-ci.com/zenthangplus/goccm.svg?branch=master)](https://travis-ci.com/zenthangplus/goccm)
+# Golang Concurrency Manager
+
+[![Build Status](https://travis-ci.com/zenthangplus/goccm.svg?branch=master)](https://travis-ci.com/zenthangplus/goccm)
+[![codecov](https://codecov.io/gh/zenthangplus/goccm/branch/master/graph/badge.svg)](https://codecov.io/gh/zenthangplus/goccm)
+[![goreportcard](https://goreportcard.com/badge/github.com/zenthangplus/goccm)](https://goreportcard.com/report/github.com/zenthangplus/goccm)
 
 Golang Concurrency Manager package limits the number of goroutines that are allowed to run concurrently.
 
