@@ -4,7 +4,7 @@ import "sync/atomic"
 
 type (
 	// ConcurrencyManager Interface
-	ConcurrencyManager interface {
+	ConcurrencyManagerI interface {
 		// Wait until a slot is available for the new goroutine.
 		Wait()
 
@@ -43,7 +43,7 @@ type (
 )
 
 // New concurrencyManager
-func New(maxGoRoutines int) *concurrencyManager {
+func New(maxGoRoutines int) ConcurrencyManagerI {
 	// Initiate the manager object
 	c := concurrencyManager{
 		max:       maxGoRoutines,
