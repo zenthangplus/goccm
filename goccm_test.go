@@ -2,6 +2,7 @@ package goccm
 
 import (
 	"fmt"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -20,13 +21,13 @@ func TestExample(t *testing.T) {
 }
 
 func TestManuallyClose(t *testing.T) {
-	executedJobs := 0
+	executedJobs := int32(0)
 	c := New(3)
 	for i := 1; i <= 1000; i++ {
 		c.Wait()
 		go func() {
-			executedJobs++
-			fmt.Printf("Executed jobs %d\n", executedJobs)
+			atomic.AddInt32(&executedJobs, 1)
+			fmt.Printf("Executed jobs %d\n", atomic.LoadInt32(&executedJobs))
 			time.Sleep(2 * time.Second)
 			c.Done()
 		}()
@@ -46,8 +47,8 @@ func TestConcurrency(t *testing.T) {
 		c.Wait()
 		go func(i int) {
 			fmt.Printf("Current running jobs %d\n", c.RunningCount())
-			if c.RunningCount() > testMaxRunningJobs {
-				testMaxRunningJobs = c.RunningCount()
+			if c.RunningCount() > atomic.LoadInt32(&testMaxRunningJobs) {
+				atomic.StoreInt32(&testMaxRunningJobs, c.RunningCount())
 			}
 			time.Sleep(2 * time.Second)
 			c.Done()

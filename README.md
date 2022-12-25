@@ -47,6 +47,9 @@ func main() {
     // This function has to call to ensure all goroutines have finished
     // after close the main program.
     c.WaitAllDone()
+
+    // This function will release all the channels associated with goccm
+    c.Release()
 }
 ```
 
@@ -76,5 +79,8 @@ func main() {
 
     // Returns the number of goroutines which are running
     c.RunningCount()
+
+    // Closes all the channels associated with goccm
+    c.Release()
 }
 ```

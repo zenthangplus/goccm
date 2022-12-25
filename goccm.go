@@ -1,6 +1,8 @@
 package goccm
 
-import "sync/atomic"
+import (
+	"sync/atomic"
+)
 
 type (
 	// ConcurrencyManager Interface
@@ -19,6 +21,9 @@ type (
 
 		// RunningCount Returns the number of goroutines which are running
 		RunningCount() int32
+
+		// Release Closes all the channels associated with goccm
+		Release()
 	}
 
 	concurrencyManager struct {
@@ -35,7 +40,7 @@ type (
 		allDoneCh chan bool
 
 		// The close flag allows we know when we can close the manager
-		closed bool
+		closed atomic.Bool
 
 		// The running count allows we know the number of goroutines are running
 		runningCount int32
@@ -75,13 +80,17 @@ func (c *concurrencyManager) controller() {
 
 		// When the closed flag is set,
 		// we need to close the manager if it doesn't have any running goroutine
-		if c.closed && c.runningCount == 0 {
+		if c.IsClosed() && c.RunningCount() == 0 {
 			break
 		}
 	}
 
 	// Say that all goroutines are finished, we can close the manager
 	c.allDoneCh <- true
+}
+
+func (c *concurrencyManager) IsClosed() bool {
+	return c.closed.Load()
 }
 
 // Wait until a slot is available for the new goroutine.
@@ -106,7 +115,7 @@ func (c *concurrencyManager) Done() {
 
 // Close the manager manually
 func (c *concurrencyManager) Close() {
-	c.closed = true
+	c.closed.Store(true)
 }
 
 // WaitAllDone Wait for all goroutines are done
@@ -120,5 +129,12 @@ func (c *concurrencyManager) WaitAllDone() {
 
 // RunningCount Returns the number of goroutines which are running
 func (c *concurrencyManager) RunningCount() int32 {
-	return c.runningCount
+	return atomic.LoadInt32(&c.runningCount)
+}
+
+// Release Closes all the channels associated with goccm
+func (c *concurrencyManager) Release() {
+	close(c.managerCh)
+	close(c.doneCh)
+	close(c.allDoneCh)
 }
