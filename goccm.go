@@ -34,8 +34,8 @@ type (
 		// This channel indicates when all goroutines have finished their job.
 		allDoneCh chan bool
 
-		// The close flag allows we know when we can close the manager
-		closed bool
+		// The closed channel is closed which controller should close
+		closed chan bool
 
 		// The running count allows we know the number of goroutines are running
 		runningCount int32
@@ -50,6 +50,7 @@ func New(maxGoRoutines int) *concurrencyManager {
 		managerCh: make(chan interface{}, maxGoRoutines),
 		doneCh:    make(chan bool),
 		allDoneCh: make(chan bool),
+		closed:    make(chan bool),
 	}
 
 	// Fill the manager channel by placeholder values
@@ -75,7 +76,7 @@ func (c *concurrencyManager) controller() {
 
 		// When the closed flag is set,
 		// we need to close the manager if it doesn't have any running goroutine
-		if c.closed && c.runningCount == 0 {
+		if c.isClosed() && c.RunningCount() == 0 {
 			break
 		}
 	}
@@ -105,8 +106,24 @@ func (c *concurrencyManager) Done() {
 }
 
 // Close the manager manually
+// terminate if channel is already closed
 func (c *concurrencyManager) Close() {
-	c.closed = true
+	// terminate if channel is already closed
+	select {
+	case <-c.closed:
+		return
+	default:
+		close(c.closed)
+	}
+}
+
+func (c *concurrencyManager) isClosed() bool {
+	select {
+	case <-c.closed:
+		return true
+	default:
+		return false
+	}
 }
 
 // WaitAllDone Wait for all goroutines are done
@@ -120,5 +137,5 @@ func (c *concurrencyManager) WaitAllDone() {
 
 // RunningCount Returns the number of goroutines which are running
 func (c *concurrencyManager) RunningCount() int32 {
-	return c.runningCount
+	return atomic.AddInt32(&c.runningCount, 0)
 }
