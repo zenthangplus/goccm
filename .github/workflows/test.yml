@@ -54,6 +54,7 @@ jobs:
         run: |
           go test -v -covermode=atomic -coverprofile=coverage.txt
       - name: Upload coverage report
+        if: github.ref == 'refs/heads/master'
         uses: codecov/codecov-action@v1.0.2
         with:
           token: ${{ secrets.CODECOV_ACCESS_TOKEN }}
